@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#080d16"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>远驱 PRO · 控制器诊断</title>
+<style>
+:root{color-scheme:dark;--bg:#080d16;--panel:#111b2a;--panel2:#162337;--line:#26364b;--txt:#edf5ff;--muted:#8ea2ba;--cyan:#55d8f2;--green:#35d49a;--amber:#ffbf5b;--red:#ff647c}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 50% -15%,#19304b 0,transparent 48%),var(--bg);color:var(--txt);font:14px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;padding:env(safe-area-inset-top) 0 calc(78px + env(safe-area-inset-bottom))}
+header{padding:18px 16px 12px;position:sticky;top:0;background:#080d16ed;backdrop-filter:blur(18px);z-index:5;border-bottom:1px solid var(--line)}
+.brand{display:flex;justify-content:space-between;align-items:center}.brand b{font-size:19px;letter-spacing:1.5px}.brand small{color:var(--muted);font-size:10px;letter-spacing:2px}.status{display:flex;align-items:center;gap:7px;color:var(--muted);font-size:12px;margin-top:12px}.dot{width:8px;height:8px;border-radius:50%;background:#68788c}.dot.on{background:var(--green);box-shadow:0 0 12px var(--green)}
+main{padding:14px 13px;max-width:760px;margin:auto}.hero{background:linear-gradient(135deg,#13283d,#101b2a 70%);border:1px solid #29435a;border-radius:19px;padding:17px;margin-bottom:12px}.heroTop{display:flex;justify-content:space-between;color:var(--muted);font-size:11px}.voltage{font-size:42px;font-weight:750;letter-spacing:-1px;margin:9px 0 2px}.voltage span{font-size:15px;color:var(--muted);font-weight:500}.sub{color:var(--muted);font-size:11px}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.tile,.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:13px}.tile label{color:var(--muted);font-size:11px}.tile strong{display:block;font-size:23px;margin-top:7px;font-weight:680;letter-spacing:-.4px}.tile em{font-style:normal;color:var(--muted);font-size:11px;margin-left:4px}.section{font-size:12px;color:var(--cyan);letter-spacing:1px;margin:20px 2px 9px}.card{margin-bottom:10px}.row{display:flex;justify-content:space-between;gap:10px;padding:10px 0;border-bottom:1px solid #223044}.row:last-child{border:0}.row span{color:var(--muted)}.row b{font-weight:550;text-align:right;overflow-wrap:anywhere}.btn{border:0;border-radius:12px;background:var(--cyan);color:#04111b;font-weight:750;padding:13px 16px;font-size:14px;width:100%;cursor:pointer}.btn.secondary{background:#1b2a3d;color:var(--txt);border:1px solid var(--line)}.btn.danger{background:#48202a;color:#ffdce2}.actions{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:12px}.tabs{position:fixed;z-index:10;bottom:0;left:0;right:0;padding:9px 8px calc(9px + env(safe-area-inset-bottom));display:grid;grid-template-columns:repeat(4,1fr);background:#0b1320f2;backdrop-filter:blur(20px);border-top:1px solid var(--line)}.tab{background:none;border:0;color:var(--muted);font-size:11px;padding:5px}.tab.active{color:var(--cyan)}.tab i{display:block;font-style:normal;font-size:19px;margin-bottom:3px}.page{display:none}.page.active{display:block}.notice{border:1px solid #66502c;background:#241e13;color:#ffd89a;padding:12px;border-radius:12px;font-size:12px;line-height:1.6}.good{color:var(--green)}.bad{color:var(--red)}.raw{font:11px ui-monospace,monospace;white-space:pre-wrap;word-break:break-all;color:#a8c4df;max-height:260px;overflow:auto}.muted{color:var(--muted)}.pill{font-size:10px;padding:4px 7px;border-radius:20px;background:#1b3041;color:var(--cyan)}input{width:100%;background:#0b1421;border:1px solid var(--line);border-radius:9px;padding:11px;color:var(--txt);font-size:14px}.disabled{opacity:.5}
+</style></head>
+<body>
+<header><div class="brand"><div><b>FARDRIVER <span style="color:var(--cyan)">PRO</span></b><br><small>CONTROLLER DIAGNOSTIC</small></div><span class="pill">ND72450 · BLE</span></div><div class="status"><i id="dot" class="dot"></i><span id="status">未连接</span><span style="margin-left:auto" id="fps">0 FPS</span></div></header>
+<main>
+<section id="p-dash" class="page active">
+<div class="hero"><div class="heroTop"><span>控制器母线电压</span><span id="linkName">等待连接</span></div><div class="voltage" id="voltage">--.- <span>V</span></div><div class="sub">真实 BLE 通知帧解码 · 未连接时不显示模拟数值</div></div>
+<div class="grid">
+<div class="tile"><label>线电流</label><strong id="lineCurrent">--<em>A</em></strong></div>
+<div class="tile"><label>电机转速</label><strong id="rpm">--<em>RPM</em></strong></div>
+<div class="tile"><label>相电流 A</label><strong id="phaseA">--<em>A</em></strong></div>
+<div class="tile"><label>相电流 C</label><strong id="phaseC">--<em>A</em></strong></div>
+<div class="tile"><label>MOS 温度</label><strong id="mosTemp">--<em>°C</em></strong></div>
+<div class="tile"><label>电机温度</label><strong id="motorTemp">--<em>°C</em></strong></div>
+<div class="tile"><label>电量估算</label><strong id="soc">--<em>%</em></strong></div>
+<div class="tile"><label>油门电压</label><strong id="throttle">--<em>V</em></strong></div>
+</div>
+<div class="section">控制器状态</div><div class="card"><div class="row"><span>极对数</span><b id="polePairs">--</b></div><div class="row"><span>调制比</span><b id="modulation">--</b></div><div class="row"><span>弱磁状态</span><b id="fw">--</b></div><div class="row"><span>刹车输入</span><b id="brake">--</b></div><div class="row"><span>故障位图</span><b id="faults">--</b></div><div class="row"><span>固件版本标记</span><b id="firmware">--</b></div></div>
+<div class="actions"><button class="btn" id="connect">连接 YuanQu 蓝牙</button><button class="btn secondary" id="disconnect">断开连接</button></div>
+</section>
+<section id="p-params" class="page">
+<div class="section">参数读取 / 写入</div>
+<div class="notice">当前通信实现已验证的是实时遥测帧。参数页先展示字段清单与协议状态；在取得你这台 ND72450 的原版 App 参数读写数据帧之前，写入功能保持锁定。不会用猜测的地址或数值写入控制器。</div>
+<div class="section">截图中的原版参数项目</div><div class="card" id="paramList"></div>
+<div class="section">参数协议状态</div><div class="card"><div class="row"><span>实时遥测协议</span><b class="good">已实现帧校验/解码</b></div><div class="row"><span>参数批量读取</span><b class="muted">待采集原版数据帧</b></div><div class="row"><span>参数单项写入</span><b class="muted">待验证地址/长度/校验</b></div><div class="row"><span>登录/绑定</span><b class="muted">待验证认证流程</b></div><div class="row"><span>保存/恢复</span><b class="muted">暂不开放</b></div></div>
+</section>
+<section id="p-diagnose" class="page">
+<div class="section">通信诊断</div><div class="card"><div class="row"><span>BLE 服务 UUID</span><b>FFE0</b></div><div class="row"><span>数据特征 UUID</span><b>FFEC</b></div><div class="row"><span>帧长度</span><b>16 bytes</b></div><div class="row"><span>有效帧</span><b id="validFrames">0</b></div><div class="row"><span>丢弃字节</span><b id="dropped">0</b></div><div class="row"><span>协议格式</span><b id="format">等待数据</b></div></div>
+<div class="section">最近收到的原始帧</div><div class="card"><div class="raw" id="raw">尚未收到数据</div></div>
+<div class="section">日志</div><div class="card"><div class="raw" id="log">启动完成。请在 Bluefy 中打开 HTTPS 页面并连接控制器。</div></div>
+</section>
+<section id="p-about" class="page">
+<div class="section">设备与安全</div><div class="card"><div class="row"><span>目标控制器</span><b>南京远驱 ND72450</b></div><div class="row"><span>电池配置</span><b>76V · 65Ah（用户提供）</b></div><div class="row"><span>电机</span><b>QS / 全顺 2000W</b></div><div class="row"><span>网页版本</span><b>0.1.0 · 遥测验证版</b></div></div>
+<div class="notice">安全原则：当前版本不发送参数写入、恢复出厂、复位或刷机命令。显示值只来自有效 BLE 数据帧；没有收到的字段保持“--”。请停车并断开驱动使能后进行后续协议测试。</div>
+<div class="section">连接说明</div><div class="card">iPhone 请使用支持 Web Bluetooth 的 Bluefy 浏览器访问本网页（HTTPS）。Safari 普通模式不提供 Web Bluetooth API。设备名称过滤 YuanQu / yuanqu / YUANQU。</div>
+</section>
+</main>
+<nav class="tabs"><button class="tab active" data-p="dash"><i>◉</i>实时数据</button><button class="tab" data-p="params"><i>☷</i>参数调试</button><button class="tab" data-p="diagnose"><i>⌁</i>通信诊断</button><button class="tab" data-p="about"><i>⚙</i>设备设置</button></nav>
+<script>
+const $=id=>document.getElementById(id), SVC=0xffe0, CHR=0xffec, NAMES=['YuanQu','YUANQU','Yuanqu','yuanqu','FarDriver','Fardriver','FARDRIVER'];
+let device=null,server=null,char=null,buf=[],frames=0,dropped=0,lastSecond=Date.now(),frameCount=0;
+const paramNames=['位置传感器','温度传感器','相移','极对数','电机方向','额定转速','额定电压','额定功率','最大转速','后退转速','最大线电流','最大相电流','油门响应','加速灵敏度','Boost线电流','Boost相电流','相线交换','经济加速系数','弱磁特性','弱磁响应','减速灵敏度','回油门','油门低阈值','油门高阈值'];
+$('paramList').innerHTML=paramNames.map(n=>'<div class="row"><span>'+n+'</span><b class="muted">等待参数协议</b></div>').join('');
+function log(s){$('log').textContent=new Date().toLocaleTimeString()+'  '+s+'\n'+$('log').textContent.slice(0,3000)}
+function status(s,on=false){$('status').textContent=s;$('dot').classList.toggle('on',on)}
+function put(id,v){$(id).textContent=v==null?'--':v}
+function u16be(f,i){return f[i]*256+f[i+1]}function s16(v){return v&32768?v-65536:v}function s8(v){return v&128?v-256:v}
+function isNew(f){return (f[1]&192)===128}
+const addr=[0xe2,0xe8,0xee,0x00,0x06,0x0c,0x12,0xe2,0xe8,0xee,0x18,0x1e,0x24,0x2a,0xe2,0xe8,0xee,0x30,0x5d,0x63,0x69,0xe2,0xe8,0xee,0x7c,0x82,0x88,0x8e,0xe2,0xe8,0xee,0x94,0x9a,0xa0,0xa6,0xe2,0xe8,0xee,0xac,0xb2,0xb8,0xbe,0xe2,0xe8,0xee,0xc4,0xca,0xd0,0xe2,0xe8,0xee,0xd6,0xdc,0xf4,0xfa];
+function crc(f){let hi=0x3c,lo=0x7f;for(let k=0;k<14;k++){let c=hi^f[k];for(let b=0;b<8;b++)c=c&1?(c>>>1)^0xa001:c>>>1;hi=lo^(c&255);lo=(c>>>8)&255;}return [hi,lo]}
+function valid(f){if(f.length!==16||f[0]!==170)return false;if(isNew(f)){let c=crc(f);return f[14]===c[0]&&f[15]===c[1]}let sum=0;for(let i=0;i<14;i++)sum+=f[i];return ((f[14]<<8)|f[15])===sum}
+function phase(raw){return 1.953125*Math.sqrt(raw)}
+function decode(f){let d={};if(!isNew(f)){switch(f[1]){case 0:d.rpm=s16(u16be(f,6));d.faults=f[8]|((f[9]&127)<<8);d.brake=!!(f[9]&128);break;case 1:d.voltage=s16(u16be(f,2))/10;d.current=s16(u16be(f,4))/4;d.mod=f[6]/128;d.fw=!!(f[7]&1);break;case 2:d.pa=phase(f[2]*65536+f[3]*256+f[4]);d.pc=phase(f[9]*65536+f[10]*256+f[11]);break;case 4:d.mos=s8(f[4]);break;case 8:d.poles=f[10];break;case 10:d.soc=f[10];break;case 13:d.motor=s8(f[2]);d.throttle=u16be(f,4)*3.3*1.5/4096;d.fwver=f[10];break;case 15:d.stop=u16be(f,4);break;}}else{let le=i=>f[i]|f[i+1]<<8,idx=f[1]&127,a=addr[idx];switch(a){case 0xe2:d.faults=f[4]|((f[5]&127)<<8);d.brake=!!(f[5]&128);d.mod=f[6]/128;d.rpm=s16(le(8));break;case 0xe8:d.voltage=s16(le(2))/10;d.current=s16(le(6))/4;break;case 0xee:d.pa=phase(f[6]*65536+f[7]*256+f[8]);d.pc=phase(f[9]*65536+f[10]*256+f[11]);break;case 0x82:d.throttle=le(2)*.01;d.fwver=f[11];break;case 0xd6:d.mos=s16(le(12));break;case 0xf4:d.motor=s16(le(2));d.soc=f[5];break;case 0x12:d.poles=f[6];break;}}return d}
+function render(d){if('voltage'in d)put('voltage',d.voltage.toFixed(1)+' V');if('current'in d)put('lineCurrent',d.current.toFixed(1)+' A');if('rpm'in d)put('rpm',d.rpm);if('pa'in d)put('phaseA',d.pa.toFixed(1)+' A');if('pc'in d)put('phaseC',d.pc.toFixed(1)+' A');if('mos'in d)put('mosTemp',d.mos+' °C');if('motor'in d)put('motorTemp',d.motor+' °C');if('soc'in d)put('soc',d.soc+' %');if('throttle'in d)put('throttle',d.throttle.toFixed(2)+' V');if('poles'in d)put('polePairs',d.poles);if('mod'in d)put('modulation',(d.mod*100).toFixed(1)+'%');if('fw'in d)put('fw',d.fw?'开启':'关闭');if('brake'in d)put('brake',d.brake?'触发':'未触发');if('faults'in d)put('faults','0x'+d.faults.toString(16).toUpperCase().padStart(4,'0'));if('fwver'in d)put('firmware',d.fwver)}
+function accept(chunk){for(const b of chunk)buf.push(b);while(buf.length>=16){let i=buf.indexOf(170);if(i<0){dropped+=buf.length;buf=[];break}if(i>0){dropped+=i;buf.splice(0,i)}if(buf.length<16)break;let f=buf.slice(0,16);if(!valid(f)){buf.shift();dropped++;continue}buf.splice(0,16);frames++;frameCount++;$('validFrames').textContent=frames;$('dropped').textContent=dropped;$('format').textContent=isNew(f)?'新格式 / CRC16':'传统格式 / SUM';$('raw').textContent=f.map(x=>x.toString(16).padStart(2,'0').toUpperCase()).join(' ');render(decode(f))}let now=Date.now();if(now-lastSecond>=1000){$('fps').textContent=frameCount+' FPS';frameCount=0;lastSecond=now}}
+async function connect(){if(!navigator.bluetooth){alert('当前浏览器不支持 Web Bluetooth。请在 iPhone 使用 Bluefy 打开 HTTPS 页面。');return}try{status('正在搜索…');const filters=NAMES.map(namePrefix=>({namePrefix}));device=await navigator.bluetooth.requestDevice({filters,optionalServices:[SVC]});device.addEventListener('gattserverdisconnected',()=>{status('连接已断开');$('linkName').textContent='等待连接';log('GATT 已断开')});status('正在连接…');server=await device.gatt.connect();const service=await server.getPrimaryService(SVC);char=await service.getCharacteristic(CHR);await char.startNotifications();char.addEventListener('characteristicvaluechanged',e=>{const v=e.target.value;accept(new Uint8Array(v.buffer,v.byteOffset,v.byteLength))});$('linkName').textContent=device.name||'YuanQu';status('已连接 · 正在接收',true);log('连接成功：'+(device.name||'YuanQu')+'；FFE0/FFEC 通知已开启');}catch(e){status('连接失败');log('连接失败：'+e.message);alert('连接失败：'+e.message)}}
+async function disconnect(){try{if(device?.gatt?.connected)device.gatt.disconnect()}catch(e){}status('未连接');$('linkName').textContent='等待连接';log('用户主动断开')}
+$('connect').onclick=connect;$('disconnect').onclick=disconnect;
+document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>{document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('active',x===b));document.querySelectorAll('.page').forEach(x=>x.classList.toggle('active',x.id==='p-'+b.dataset.p))});
+if(!navigator.bluetooth)log('提示：当前容器未暴露 Web Bluetooth。请用 Bluefy 浏览器访问本 HTTPS 页面。');
+</script></body></html>
